@@ -1,0 +1,6 @@
+<!-- pom.xml (scope test) — PENDIENTE de confirmar contra el proyecto real -->
+<dependency><groupId>org.junit.jupiter</groupId><artifactId>junit-jupiter</artifactId><scope>test</scope></dependency>
+<dependency><groupId>com.fasterxml.jackson.core</groupId><artifactId>jackson-databind</artifactId><scope>test</scope></dependency>
+<dependency><groupId>org.hibernate.validator</groupId><artifactId>hibernate-validator</artifactId><scope>test</scope></dependency>
+<dependency><groupId>jakarta.validation</groupId><artifactId>jakarta.validation-api</artifactId><scope>test</scope></dependency>
+<dependency><groupId>org.postgresql</groupId><artifactId>postgresql</artifactId><scope>test</scope></dependency>
