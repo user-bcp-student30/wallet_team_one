@@ -1,0 +1,83 @@
+<!-- login.component.html -->
+
+<main class="login-page">
+  <section class="login-card" aria-labelledby="login-title">
+    <h1 id="login-title">Iniciar sesión</h1>
+    <p id="login-instructions">Ingresa tu usuario y contraseña.</p>
+
+    <div
+      *ngIf="apiErrorMessage"
+      #errorSummary
+      class="message message-error"
+      role="alert"
+      aria-live="assertive"
+      tabindex="-1"
+    >
+      {{ apiErrorMessage }}
+    </div>
+
+    <p *ngIf="successMessage" class="message message-success" role="status" aria-live="polite">
+      {{ successMessage }}
+    </p>
+
+    <p *ngIf="loading" class="progress-message" role="status" aria-live="polite">
+      Iniciando sesión…
+    </p>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <fieldset [disabled]="loading">
+        <legend class="visually-hidden">Credenciales</legend>
+
+        <div class="form-field">
+          <label for="username">Usuario</label>
+          <input
+            #usernameInput
+            id="username"
+            name="username"
+            type="text"
+            formControlName="username"
+            autocomplete="username"
+            aria-describedby="username-hint username-error"
+            [attr.aria-invalid]="showUsernameError() ? 'true' : 'false'"
+            (input)="clearServerMessages()"
+          />
+          <span id="username-hint" class="field-hint">Escribe tu usuario.</span>
+          <span
+            *ngIf="showUsernameError()"
+            id="username-error"
+            class="field-error"
+          >
+            El usuario es obligatorio.
+          </span>
+        </div>
+
+        <div class="form-field">
+          <label for="password">Contraseña</label>
+          <input
+            #passwordInput
+            id="password"
+            name="password"
+            type="password"
+            formControlName="password"
+            autocomplete="current-password"
+            aria-describedby="password-hint password-error"
+            [attr.aria-invalid]="showPasswordError() ? 'true' : 'false'"
+            (input)="clearServerMessages()"
+          />
+          <span id="password-hint" class="field-hint">Escribe tu contraseña.</span>
+          <span
+            *ngIf="showPasswordError()"
+            id="password-error"
+            class="field-error"
+          >
+            La contraseña es obligatoria.
+          </span>
+        </div>
+      </fieldset>
+
+      <button type="submit" [disabled]="loading">
+        {{ loading ? 'Iniciando sesión…' : 'Iniciar sesión' }}
+      </button>
+    </form>
+  </section>
+</main>
