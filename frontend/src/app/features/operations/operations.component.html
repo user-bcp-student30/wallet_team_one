@@ -1,0 +1,170 @@
+<section class="page">
+  <h1>Operaciones y conciliación</h1>
+
+  <div class="alert error" *ngIf="error()">{{ error() }}</div>
+
+  <div class="panel">
+    <h2>Conciliación diaria</h2>
+    <div class="actions">
+      <button type="button" (click)="runReconciliation()" [disabled]="running()">
+        {{ running() ? 'Corriendo...' : 'Correr conciliación' }}
+      </button>
+      <label>
+        Ver resumen de fecha
+        <input type="date" [(ngModel)]="summaryDate" />
+      </label>
+      <button type="button" class="secondary" (click)="loadSummaryByDate()" [disabled]="running()">
+        Consultar resumen
+      </button>
+    </div>
+
+    <ng-container *ngIf="summary() as s">
+      <p><strong>Fecha:</strong> {{ s.date }} · <span class="badge {{ s.status }}">{{ s.status }}</span></p>
+      <div class="summary-grid">
+        <div class="summary-item">
+          <div class="value">{{ s.totals.reconciled }}</div>
+          <div class="label">Conciliados</div>
+        </div>
+        <div class="summary-item">
+          <div class="value">{{ s.totals.unreconciled }}</div>
+          <div class="label">No conciliados</div>
+        </div>
+        <div class="summary-item">
+          <div class="value">{{ s.totals.resolved }}</div>
+          <div class="label">Resueltos</div>
+        </div>
+      </div>
+
+      <table *ngIf="s.incidents.length">
+        <thead>
+          <tr>
+            <th>Incidencia</th>
+            <th>Pago</th>
+            <th>Motivo</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let i of s.incidents">
+            <td>{{ i.incidentId }}</td>
+            <td>{{ i.paymentId }}</td>
+            <td>{{ i.reason }}</td>
+            <td><span class="badge {{ i.status }}">{{ i.status }}</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </ng-container>
+  </div>
+
+  <div class="panel">
+    <h2>Incidencias de conciliación</h2>
+    <div class="filters">
+      <label>
+        Desde
+        <input type="date" [(ngModel)]="incidentsFrom" />
+      </label>
+      <label>
+        Hasta
+        <input type="date" [(ngModel)]="incidentsTo" />
+      </label>
+      <label>
+        Canal
+        <input type="text" [(ngModel)]="incidentsChannel" placeholder="wallet-mock" />
+      </label>
+      <button type="button" (click)="searchIncidents()" [disabled]="incidentsLoading()">Filtrar</button>
+    </div>
+    <table *ngIf="incidents().length">
+      <thead>
+        <tr>
+          <th>Incidencia</th>
+          <th>Pago</th>
+          <th>Motivo</th>
+          <th>Estado</th>
+          <th>Canal</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let i of incidents()">
+          <td>{{ i.incidentId }}</td>
+          <td>{{ i.paymentId }}</td>
+          <td>{{ i.reason }}</td>
+          <td><span class="badge {{ i.status }}">{{ i.status }}</span></td>
+          <td>{{ i.channel ?? 'wallet-mock' }}</td>
+        </tr>
+      </tbody>
+    </table>
+    <p *ngIf="!incidentsLoading() && !incidents().length">No hay incidencias para estos filtros.</p>
+  </div>
+
+  <div class="panel">
+    <h2>Ledger</h2>
+    <div class="filters">
+      <label>
+        Desde
+        <input type="date" [(ngModel)]="ledgerFrom" />
+      </label>
+      <label>
+        Hasta
+        <input type="date" [(ngModel)]="ledgerTo" />
+      </label>
+      <label>
+        Cuenta
+        <input type="text" [(ngModel)]="ledgerAccount" placeholder="wallet-demo" />
+      </label>
+      <button type="button" (click)="searchLedger()" [disabled]="ledgerLoading()">Filtrar</button>
+    </div>
+    <table *ngIf="ledger().length">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Operación</th>
+          <th>Tipo</th>
+          <th>Cuenta</th>
+          <th>Monto</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let l of ledger()">
+          <td>{{ l.id }}</td>
+          <td>{{ l.operation }}</td>
+          <td>{{ l.kind }}</td>
+          <td>{{ l.account }}</td>
+          <td>{{ (l.amount / 100).toFixed(2) }}</td>
+        </tr>
+      </tbody>
+    </table>
+    <p *ngIf="!ledgerLoading() && !ledger().length">No hay asientos de ledger para estos filtros.</p>
+  </div>
+
+  <div class="panel">
+    <h2>Settlements (reporte del proveedor)</h2>
+    <div class="filters">
+      <label>
+        Desde
+        <input type="date" [(ngModel)]="settlementsFrom" />
+      </label>
+      <label>
+        Hasta
+        <input type="date" [(ngModel)]="settlementsTo" />
+      </label>
+      <button type="button" (click)="searchSettlements()" [disabled]="settlementsLoading()">Filtrar</button>
+    </div>
+    <table *ngIf="settlements().length">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Monto</th>
+          <th>Estado</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let s of settlements()">
+          <td>{{ s.id }}</td>
+          <td>{{ (s.amount / 100).toFixed(2) }}</td>
+          <td><span class="badge {{ s.status }}">{{ s.status }}</span></td>
+        </tr>
+      </tbody>
+    </table>
+    <p *ngIf="!settlementsLoading() && !settlements().length">No hay settlements para estos filtros.</p>
+  </div>
+</section>

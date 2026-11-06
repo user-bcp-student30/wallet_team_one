@@ -1,0 +1,108 @@
+<section class="page" *ngIf="session() as s; else loadingBlock">
+  <h1>Onboarding de wallet</h1>
+  <p class="subtitle">Completa estos 4 pasos para activar tu wallet y empezar a pagar.</p>
+
+  <ol class="steps">
+    <li
+      *ngFor="let step of s.steps"
+      [class.done]="step.status === 'DONE'"
+      [class.current]="step.status === 'CURRENT'"
+      [class.pending]="step.status === 'PENDING'"
+    >
+      <span class="step-index">{{ step.status === 'DONE' ? '✓' : step.id === s.currentStep ? '●' : '○' }}</span>
+      <span class="step-label">{{ stepLabels[step.id] }}</span>
+      <small class="step-status">{{ step.status }}</small>
+    </li>
+  </ol>
+
+  <div class="alert error" *ngIf="fieldError()">{{ fieldError() }}</div>
+
+  <!-- Paso IDENTITY -->
+  <form class="step-form" *ngIf="isCurrent('IDENTITY')" (ngSubmit)="submitIdentity()">
+    <h2>Paso 1 de 4 · Identidad</h2>
+    <label>
+      Nombre completo
+      <input type="text" name="fullName" [(ngModel)]="fullName" placeholder="Ej. Juana Pérez" required />
+    </label>
+    <label>
+      Tipo de documento
+      <input type="text" value="TEST" disabled />
+    </label>
+    <label>
+      Número de documento (ficticio, debe iniciar con TEST-)
+      <input type="text" name="documentNumber" [(ngModel)]="documentNumber" placeholder="TEST-001" required />
+    </label>
+    <button type="submit" [disabled]="loading()">Continuar</button>
+  </form>
+
+  <!-- Paso DOCUMENT -->
+  <form class="step-form" *ngIf="isCurrent('DOCUMENT')" (ngSubmit)="submitDocument()">
+    <h2>Paso 2 de 4 · Documento</h2>
+    <p>Simulamos la carga de tu documento de identidad ficticio.</p>
+    <label class="checkbox">
+      <input type="checkbox" name="documentAccepted" [(ngModel)]="documentAccepted" />
+      Confirmo que el documento ficticio fue cargado correctamente.
+    </label>
+    <button type="submit" [disabled]="loading()">Continuar</button>
+  </form>
+
+  <!-- Paso REVIEW -->
+  <form class="step-form" *ngIf="isCurrent('REVIEW')" (ngSubmit)="submitReview()">
+    <h2>Paso 3 de 4 · Revisión (KYC)</h2>
+    <p>Elige el escenario de verificación a simular para esta demo.</p>
+    <label>
+      Escenario
+      <select name="scenario" [(ngModel)]="scenario">
+        <option value="APPROVED">Aprobado automáticamente</option>
+        <option value="REJECTED">Rechazado</option>
+        <option value="MANUAL_REVIEW">Revisión manual</option>
+        <option value="UNAVAILABLE">Proveedor no disponible</option>
+      </select>
+    </label>
+    <button type="submit" [disabled]="loading()">Enviar a revisión</button>
+  </form>
+
+  <!-- Paso ACTIVATION -->
+  <div class="step-form" *ngIf="isCurrent('ACTIVATION')">
+    <h2>Paso 4 de 4 · Activación</h2>
+
+    <ng-container [ngSwitch]="s.walletStatus">
+      <div *ngSwitchCase="'ACTIVE'" class="alert success">
+        <p><strong>¡Wallet activa!</strong> ID: {{ s.walletId }}</p>
+        <a routerLink="/pagos/nuevo" class="btn-primary">Ir a pagar</a>
+      </div>
+
+      <div *ngSwitchCase="'REJECTED'" class="alert error">
+        <p>Tu verificación fue rechazada. No es posible activar la wallet en este escenario.</p>
+      </div>
+
+      <div *ngSwitchCase="'PENDING'" class="alert info">
+        <p>
+          Tu verificación quedó en <strong>revisión manual</strong>. Normalmente un operador de
+          soporte resolvería esto; para esta demo puedes simular esa decisión:
+        </p>
+        <label>
+          Decisión del operador
+          <select name="manualDecision" [(ngModel)]="manualDecision">
+            <option value="ACTIVE">Aprobar (ACTIVE)</option>
+            <option value="REJECTED">Rechazar (REJECTED)</option>
+          </select>
+        </label>
+        <button type="button" (click)="resolveManualReview()" [disabled]="loading()">
+          Resolver revisión manual
+        </button>
+      </div>
+
+      <div *ngSwitchDefault>
+        <button type="button" (click)="submitActivation()" [disabled]="loading()">Activar wallet</button>
+      </div>
+    </ng-container>
+  </div>
+</section>
+
+<ng-template #loadingBlock>
+  <section class="page">
+    <p *ngIf="loading()">Iniciando sesión de onboarding...</p>
+    <div class="alert error" *ngIf="fieldError()">{{ fieldError() }}</div>
+  </section>
+</ng-template>

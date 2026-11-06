@@ -1,0 +1,9 @@
+package pe.bcp.wallet.dto.mock;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class MockPendingResolution {
+    public String status;
+    public boolean escalated;
+}

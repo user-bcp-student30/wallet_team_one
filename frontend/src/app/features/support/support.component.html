@@ -1,0 +1,64 @@
+<section class="page">
+  <h1>Panel de soporte</h1>
+
+  <div class="alert error" *ngIf="error()">{{ error() }}</div>
+
+  <h2>Casos de soporte</h2>
+  <p *ngIf="loading()">Cargando casos...</p>
+
+  <div class="panel" *ngFor="let c of cases()">
+    <p>
+      <strong>Caso:</strong> {{ c.caseId }} ·
+      <span class="badge {{ c.status }}">{{ c.status }}</span>
+    </p>
+    <p><strong>Recurso:</strong> {{ c.resource }} ({{ c.resourceType }})</p>
+    <p><strong>Motivo:</strong> {{ c.reason }}</p>
+    <p class="eligibility">{{ eligibleActionLabels[c.eligibleAction] }}</p>
+
+    <ng-container *ngIf="c.status === 'OPEN'">
+      <label>
+        Acción de resolución
+        <select [(ngModel)]="resolutionByCase[c.caseId]">
+          <option value="RETRY">Reintentar</option>
+          <option value="ESCALATE">Escalar</option>
+          <option value="REJECT">Rechazar</option>
+          <option value="ACCEPT_DISPUTE">Aceptar disputa</option>
+        </select>
+      </label>
+      <label>
+        Nota de resolución
+        <textarea rows="2" [(ngModel)]="noteByCase[c.caseId]" placeholder="Describe la resolución..."></textarea>
+      </label>
+      <button type="button" (click)="resolveCase(c)" [disabled]="resolvingCaseId() === c.caseId">
+        {{ resolvingCaseId() === c.caseId ? 'Resolviendo...' : 'Resolver caso' }}
+      </button>
+    </ng-container>
+  </div>
+
+  <p *ngIf="!loading() && !cases().length">No hay casos de soporte registrados.</p>
+
+  <h2>Reversos</h2>
+  <div class="panel">
+    <h3>Crear reverso de un pago exitoso</h3>
+    <label>
+      ID del pago
+      <input type="text" [(ngModel)]="reversalPaymentId" placeholder="pay_xxx" />
+    </label>
+    <button type="button" (click)="createReversal()" [disabled]="reversalLoading()">Crear reverso</button>
+    <div class="alert info" *ngIf="reversalResult() as r">
+      Reverso {{ r.reversalId }} para el pago {{ r.paymentId }} · estado: {{ r.status }}
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>Consultar estado de un reverso</h3>
+    <label>
+      ID del reverso
+      <input type="text" [(ngModel)]="reversalLookupId" placeholder="rev_xxx" />
+    </label>
+    <button type="button" (click)="lookupReversal()" [disabled]="reversalLoading()">Consultar</button>
+    <div class="alert info" *ngIf="reversalLookupResult() as r">
+      Reverso {{ r.reversalId }} para el pago {{ r.paymentId }} · estado: {{ r.status }}
+    </div>
+  </div>
+</section>

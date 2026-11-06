@@ -1,0 +1,79 @@
+<section class="page">
+  <h1>Dashboard de comercio</h1>
+  <p class="subtitle">Comercio: {{ merchantId }}</p>
+
+  <div class="alert error" *ngIf="error()">{{ error() }}</div>
+
+  <div class="panel">
+    <h2>Generar QR de cobro</h2>
+    <label>
+      Monto (S/, opcional)
+      <input type="text" [(ngModel)]="qrAmountSoles" placeholder="25.00" />
+    </label>
+    <label>
+      Expira en (segundos)
+      <input type="number" [(ngModel)]="expiresInSeconds" min="30" />
+    </label>
+    <button type="button" (click)="generateQr()">Generar QR</button>
+
+    <div class="alert success" *ngIf="qr() as q">
+      <p><strong>QR generado:</strong> {{ q.qrId }}</p>
+      <p>Payload: <code>{{ q.payload }}</code></p>
+      <p *ngIf="q.amountCents !== null">Monto: S/ {{ (q.amountCents / 100).toFixed(2) }}</p>
+      <p>Expira: {{ q.expiresAt | date: 'short' }}</p>
+    </div>
+  </div>
+
+  <h2>Intentos de pago QR</h2>
+  <div class="filters">
+    <label>
+      Referencia
+      <input type="text" [(ngModel)]="reference" placeholder="pay_xxx" />
+    </label>
+    <label>
+      Desde
+      <input type="date" [(ngModel)]="from" />
+    </label>
+    <label>
+      Hasta
+      <input type="date" [(ngModel)]="to" />
+    </label>
+    <button type="button" (click)="searchPayments()" [disabled]="loading()">Filtrar</button>
+  </div>
+
+  <p *ngIf="loading()">Cargando pagos...</p>
+
+  <table *ngIf="!loading() && payments().length">
+    <thead>
+      <tr>
+        <th>Referencia</th>
+        <th>QR</th>
+        <th>Monto</th>
+        <th>Estado</th>
+        <th>Actualizado</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let p of payments()">
+        <td>{{ p.paymentId }}</td>
+        <td>{{ p.qrId ?? '—' }}</td>
+        <td>S/ {{ (p.amountCents / 100).toFixed(2) }}</td>
+        <td><span class="badge {{ p.status }}">{{ p.status }}</span></td>
+        <td>{{ p.updatedAt | date: 'short' }}</td>
+        <td>
+          <button
+            type="button"
+            class="secondary"
+            (click)="refreshStatus(p.paymentId)"
+            [disabled]="refreshingId() === p.paymentId"
+          >
+            {{ refreshingId() === p.paymentId ? 'Actualizando...' : 'Actualizar estado' }}
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p *ngIf="!loading() && loaded() && !payments().length">No hay pagos QR registrados con estos filtros.</p>
+</section>

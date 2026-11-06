@@ -1,0 +1,59 @@
+<section class="page">
+  <h1>Historial de pagos</h1>
+  <p class="subtitle">Wallet: wallet-demo</p>
+
+  <div class="filters">
+    <label>
+      Destinatario
+      <input type="text" [(ngModel)]="recipient" placeholder="contact-demo" />
+    </label>
+    <label>
+      Estado
+      <select [(ngModel)]="status">
+        <option value="">Todos</option>
+        <option value="PENDING">Pendiente</option>
+        <option value="SUCCEEDED">Exitoso</option>
+        <option value="FAILED">Fallido</option>
+        <option value="IN_REVIEW">En revisión</option>
+        <option value="REVERSED">Reversado</option>
+        <option value="EXPIRED">Expirado</option>
+      </select>
+    </label>
+    <label>
+      Desde
+      <input type="date" [(ngModel)]="from" />
+    </label>
+    <label>
+      Hasta
+      <input type="date" [(ngModel)]="to" />
+    </label>
+    <button type="button" (click)="search()" [disabled]="loading()">Buscar</button>
+  </div>
+
+  <div class="alert error" *ngIf="error()">{{ error() }}</div>
+
+  <p *ngIf="loading()">Cargando historial...</p>
+
+  <table *ngIf="!loading() && payments().length">
+    <thead>
+      <tr>
+        <th>Referencia</th>
+        <th>Destinatario</th>
+        <th>Monto</th>
+        <th>Estado</th>
+        <th>Fecha</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let p of payments()">
+        <td>{{ p.reference }}</td>
+        <td>{{ p.recipient }}</td>
+        <td>S/ {{ (p.amountCents / 100).toFixed(2) }}</td>
+        <td><span class="badge {{ p.status }}">{{ p.status }}</span></td>
+        <td>{{ p.createdAt ? (p.createdAt | date: 'short') : '—' }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p *ngIf="!loading() && loaded() && !payments().length">No se encontraron pagos con estos filtros.</p>
+</section>

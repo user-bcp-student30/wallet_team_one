@@ -1,0 +1,10 @@
+.actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.idempotency-hint {
+  font-size: 0.75rem;
+  color: #778;
+  word-break: break-all;
+}

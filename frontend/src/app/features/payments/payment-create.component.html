@@ -1,0 +1,92 @@
+<section class="page">
+  <h1>Nuevo pago de bajo monto</h1>
+  <p class="subtitle">Límite de bajo monto: S/ {{ (lowValueLimitCents / 100).toFixed(2) }} por transacción.</p>
+
+  <div class="alert error" *ngIf="fieldError()">{{ fieldError() }}</div>
+
+  <!-- Etapa FORM -->
+  <form *ngIf="stage() === 'FORM'" (ngSubmit)="goToConfirm()">
+    <label>
+      Destinatario
+      <select name="recipient" [(ngModel)]="recipient">
+        <option value="contact-demo">contact-demo (contacto)</option>
+        <option value="merchant-demo">merchant-demo (comercio)</option>
+      </select>
+    </label>
+    <label>
+      Monto (S/)
+      <input type="text" name="amountSoles" [(ngModel)]="amountSoles" placeholder="15.00" />
+    </label>
+    <label>
+      Escenario (simulación de demo)
+      <select name="scenario" [(ngModel)]="scenario">
+        <option value="APPROVED">Aprobado</option>
+        <option value="REJECTED">Rechazado</option>
+        <option value="MANUAL_REVIEW">Revisión manual</option>
+        <option value="UNAVAILABLE">Proveedor no disponible</option>
+      </select>
+    </label>
+    <button type="submit">Revisar pago</button>
+  </form>
+
+  <!-- Etapa CONFIRM: muestra destino y monto antes de confirmar -->
+  <div class="panel" *ngIf="stage() === 'CONFIRM'">
+    <h2>Confirma tu pago</h2>
+    <p><strong>Destino:</strong> {{ recipient }}</p>
+    <p><strong>Monto:</strong> S/ {{ (amountCents / 100).toFixed(2) }}</p>
+    <div class="actions">
+      <button type="button" (click)="confirmPayment()" [disabled]="loading()">
+        {{ loading() ? 'Procesando...' : 'Confirmar pago' }}
+      </button>
+      <button type="button" class="secondary" (click)="backToForm()" [disabled]="loading()">Editar</button>
+    </div>
+  </div>
+
+  <!-- Etapa RESULT: un único resultado terminal por intento -->
+  <div class="panel" *ngIf="stage() === 'RESULT' && result() as r">
+    <ng-container [ngSwitch]="r.status">
+      <div *ngSwitchCase="'SUCCEEDED'" class="alert success">
+        <p><strong>Pago exitoso.</strong></p>
+        <p>Referencia de transacción: <strong>{{ r.reference }}</strong></p>
+        <p *ngIf="r.duplicate">Este resultado corresponde a un intento ya registrado (idempotencia).</p>
+      </div>
+
+      <div *ngSwitchCase="'FAILED'" class="alert error">
+        <p><strong>El pago falló.</strong></p>
+        <p>No se realizó ningún cobro.</p>
+      </div>
+
+      <div *ngSwitchCase="'IN_REVIEW'" class="alert info">
+        <p><strong>Tu pago quedó en revisión.</strong></p>
+        <p>Soporte está validando el resultado con el proveedor. Consulta el historial más tarde.</p>
+      </div>
+
+      <div *ngSwitchCase="'EXPIRED'" class="alert info">
+        <p><strong>El pago expiró</strong> esperando confirmación del proveedor.</p>
+      </div>
+
+      <div *ngSwitchCase="'PENDING'" class="alert info">
+        <p>Tu pago está <strong>pendiente</strong> de confirmación.</p>
+      </div>
+
+      <div *ngSwitchDefault class="alert info">
+        <p>Estado: {{ r.status }}</p>
+      </div>
+    </ng-container>
+
+    <div class="actions" *ngIf="r.status === 'FAILED' || r.status === 'EXPIRED'">
+      <button type="button" *ngIf="r.nextAction === 'RETRY'" (click)="retrySameAttempt()">
+        Reintentar (mismo intento)
+      </button>
+      <button type="button" class="secondary" (click)="startNewAttempt()">Volver</button>
+    </div>
+
+    <div class="actions" *ngIf="r.status === 'SUCCEEDED' || r.status === 'IN_REVIEW' || r.status === 'PENDING'">
+      <button type="button" (click)="startNewAttempt()">Realizar otro pago</button>
+    </div>
+
+    <p class="idempotency-hint" *ngIf="lastIdempotencyKey()">
+      Idempotency-Key usada: <code>{{ lastIdempotencyKey() }}</code>
+    </p>
+  </div>
+</section>

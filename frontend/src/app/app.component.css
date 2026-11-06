@@ -1,0 +1,4 @@
+.app-shell {
+  min-height: calc(100vh - 56px);
+  background: #f5f7fb;
+}
